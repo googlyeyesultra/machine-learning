@@ -6,7 +6,7 @@ import os
 
 class GAN(nn.Module):
     def __init__(self,
-                 gen, gen_opt, gen_input_fn, gen_loss_fn,
+                 gen, gen_opt, gen_input_fn, gen_loss_fn,  # Assumes loss_fns add rather than mean.
                  discrim, discrim_opt, discrim_loss_fn):
         
         super().__init__()
