@@ -49,7 +49,7 @@ class GAN(nn.Module):
         discrim_loss.backward(retain_graph=True)
         self.discrim_opt.step()
         
-        gen_loss = self.gen_loss_fn(discrim_scores_fake)
+        gen_loss = self.gen_loss_fn(self.discrim(gen_out))
         
         self.gen_opt.zero_grad()
         gen_loss.backward()
