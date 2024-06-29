@@ -106,7 +106,7 @@ class GAN(nn.Module):
                             "Discriminator Training Loss", "Discriminator Validation Loss"),
                            "Loss Curves")
                 show_imgs(self.gen(self.gen_input_fn(dl_train.dataset[:10])), "Generated Images")
-                self.save_checkpoint(os.path.join(checkpoint_directory, f"checkpoint-{self.epoch}.tar"))
+                self.save_checkpoint(os.path.join(checkpoint_directory, f"checkpoint-{self.epoch-1}.tar"))
                 
         
 class Generator(nn.Module):
