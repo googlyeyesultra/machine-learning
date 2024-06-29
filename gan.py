@@ -85,6 +85,7 @@ class GAN(nn.Module):
     
     def train_loop(self, dl_train, dl_val, checkpoint_directory):
         while True:
+            print(f"Epoch {self.epoch}: ")
             train_loss_gen, train_loss_discrim = self._train_epoch(dl_train)
             train_loss_gen /= len(dl_train.dataset)
             train_loss_discrim /= len(dl_train.dataset)
@@ -99,7 +100,6 @@ class GAN(nn.Module):
             self.discrim.val_losses.append(val_loss_discrim)
             self.epoch += 1
             
-            print(f"Epoch {self.epoch-1}: ")
             if not (self.epoch-1) % 10:
                 plot_stats((self.gen.train_losses, self.gen.val_losses, self.discrim.train_losses, self.discrim.val_losses),
                            ("Generator Training Loss", "Generator Validation Loss",
