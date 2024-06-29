@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 
 
-def show_imgs(imgs, title=None, grayscale=False):
+def show_imgs(imgs, title=None, grayscale=False):  # Grayscale is assuming no channels dimension.
     img_scale = 10
     plt.figure(figsize=(img_scale, len(imgs) * img_scale))
     
