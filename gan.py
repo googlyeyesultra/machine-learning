@@ -99,7 +99,7 @@ class GAN(nn.Module):
                 print(f"    Generator Train Loss: {train_loss_gen:.3f}")
                 print(f"      Generator Val Loss: {val_loss_gen:.3f}")
                 print(f"Discriminator Train Loss: {train_loss_discrim:.3f}")
-                print(f"Discriminator Val Loss: {val_loss_discrim:.3f}")
+                print(f"  Discriminator Val Loss: {val_loss_discrim:.3f}")
             
             self.gen.train_losses.append(train_loss_gen)
             self.discrim.train_losses.append(train_loss_discrim)
