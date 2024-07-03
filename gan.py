@@ -109,7 +109,7 @@ class GAN(nn.Module):
             
             if not (self.epoch-1) % full_display_epochs:
                 if not verbose:
-                    print(f"Epoch {self.epoch}: ")  # In verbose, this is already printed.
+                    print(f"Epoch {self.epoch-1}: ")  # In verbose, this is already printed.
                     
                 plot_stats((self.gen.train_losses, self.gen.val_losses, self.discrim.train_losses, self.discrim.val_losses),
                            ("Generator Training Loss", "Generator Validation Loss",
