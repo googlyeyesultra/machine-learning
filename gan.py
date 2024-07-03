@@ -57,9 +57,10 @@ class GAN(nn.Module):
                 
         return float(gen_loss), float(discrim_loss)
     
-    def _train_epoch(self, dl_train):
+    def _train_epoch(self, dl_train, verbose):
         total_gen_loss, total_discrim_loss = 0, 0
-        for batch in tqdm(dl_train):
+        loop_display = tqdm if verbose else lambda x: x
+        for batch in loop_fn(dl_train):
             gen_loss, discrim_loss = self._train_batch(batch)
             total_gen_loss += gen_loss
             total_discrim_loss += discrim_loss
@@ -83,10 +84,10 @@ class GAN(nn.Module):
         
         return float(total_gen_loss), float(total_discrim_loss)
     
-    def train_loop(self, dl_train, dl_val, checkpoint_directory):
+    def train_loop(self, dl_train, dl_val, checkpoint_directory, full_display_epochs, verbose):
         while True:
             print(f"Epoch {self.epoch}: ")
-            train_loss_gen, train_loss_discrim = self._train_epoch(dl_train)
+            train_loss_gen, train_loss_discrim = self._train_epoch(dl_train, verbose)
             train_loss_gen /= len(dl_train.dataset)
             train_loss_discrim /= len(dl_train.dataset)
             
@@ -94,13 +95,19 @@ class GAN(nn.Module):
             val_loss_gen /= len(dl_val.dataset)
             val_loss_discrim /= len(dl_val.dataset)
             
+            if verbose:
+                print(f"    Generator Train Loss: {train_loss_gen:.3f}")
+                print(f"      Generator Val Loss: {val_loss_gen:.3f}")
+                print(f"Discriminator Train Loss: {train_loss_discrim:.3f}")
+                print(f"Discriminator Val Loss: {val_loss_discrim:.3f}")
+            
             self.gen.train_losses.append(train_loss_gen)
             self.discrim.train_losses.append(train_loss_discrim)
             self.gen.val_losses.append(val_loss_gen)
             self.discrim.val_losses.append(val_loss_discrim)
             self.epoch += 1
             
-            if not (self.epoch-1) % 10:
+            if not (self.epoch-1) % full_display_epochs:
                 plot_stats((self.gen.train_losses, self.gen.val_losses, self.discrim.train_losses, self.discrim.val_losses),
                            ("Generator Training Loss", "Generator Validation Loss",
                             "Discriminator Training Loss", "Discriminator Validation Loss"),
