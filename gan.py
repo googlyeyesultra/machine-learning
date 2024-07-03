@@ -49,7 +49,7 @@ class GAN(nn.Module):
         discrim_loss.backward(retain_graph=True)
         self.discrim_opt.step()
         
-        gen_loss = self.gen_loss_fn(self.discrim(gen_out))
+        gen_loss = self.gen_loss_fn(self.discrim(gen_out), batch, gen_out)
         
         self.gen_opt.zero_grad()
         gen_loss.backward()
@@ -77,7 +77,7 @@ class GAN(nn.Module):
                 discrim_scores_real = self.discrim(batch)
                 discrim_scores_fake = self.discrim(gen_out)
                 discrim_loss = self.discrim_loss_fn(discrim_scores_real, discrim_scores_fake)
-                gen_loss = self.gen_loss_fn(discrim_scores_fake)
+                gen_loss = self.gen_loss_fn(discrim_scores_fake, batch, gen_out)
                 total_gen_loss += gen_loss
                 total_discrim_loss += discrim_loss
         
