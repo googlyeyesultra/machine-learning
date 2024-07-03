@@ -60,7 +60,7 @@ class GAN(nn.Module):
     def _train_epoch(self, dl_train, verbose):
         total_gen_loss, total_discrim_loss = 0, 0
         loop_display = tqdm if verbose else lambda x: x
-        for batch in loop_fn(dl_train):
+        for batch in loop_display(dl_train):
             gen_loss, discrim_loss = self._train_batch(batch)
             total_gen_loss += gen_loss
             total_discrim_loss += discrim_loss
