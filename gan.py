@@ -49,7 +49,7 @@ class GAN(nn.Module):
         self.discrim_opt.zero_grad()
         discrim_loss.backward(retain_graph=True)
         if self.discrim_gradient_clipping:
-            nn.utils.clip_grad_value_(self.discrim.parameters(), 1)
+            nn.utils.clip_grad_value_(self.discrim.parameters(), 1.0)
             
         self.discrim_opt.step()
         
@@ -119,7 +119,8 @@ class GAN(nn.Module):
                            ("Generator Training Loss", "Generator Validation Loss",
                             "Discriminator Training Loss", "Discriminator Validation Loss"),
                            "Loss Curves")
-                show_imgs(self.gen(self.gen_input_fn(dl_train.dataset[:10])), "Generated Images")
+                show_imgs(self.gen(self.gen_input_fn(dl_train.dataset[:10])), "Generated Training Images")
+                show_imgs(self.gen(self.gen_input_fn(dl_val.dataset[:10])), "Generated Validation Images")
                 if checkpoint_directory:
                     self.save_checkpoint(os.path.join(checkpoint_directory, f"checkpoint-{self.epoch-1}.tar"))
                 
