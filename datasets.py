@@ -3,7 +3,7 @@ import torchvision
 import glob
 import torch
 
-class UnlabeledImageDataset(Dataset):
+class UnlabeledImageDataset(Dataset):  # TODO support for putting on CPU with pinned memory.
     def __init__(self, path, input_dimensions, device, channels=4, preprocessing=None):
         """Loads images as a dataset without class labels.
         

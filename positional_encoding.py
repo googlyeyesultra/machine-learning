@@ -104,3 +104,16 @@ class LearnedPositionalEncoding2d(PositionalEncoding2d):
         super().__init__()
         self.enc = nn.Parameter(torch.empty((height, width, embed_dim)))
         nn.init.normal_(self.enc)
+        
+class PositionalEncoding1d(nn.Module):
+    """Should be inherited from. Define self.enc"""
+    # Sequence length, embed dimension.
+    
+    def forward(self, x):
+        return self.enc + x  # Encodes whole image at once. Encoding is broadcasted to match batch dimension.
+
+class LearnedPositionalEncoding1d(PositionalEncoding1d):
+    def __init__(self, length, embed_dim):
+        super().__init__()
+        self.enc = nn.Parameter(torch.empty((length, embed_dim)))
+        nn.init.normal_(self.enc)
