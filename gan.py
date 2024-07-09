@@ -115,10 +115,12 @@ class GAN(nn.Module):
                 if not verbose:
                     print(f"Epoch {self.epoch-1}: ")  # In verbose, this is already printed.
                     
-                plot_stats((self.gen.train_losses, self.gen.val_losses, self.discrim.train_losses, self.discrim.val_losses),
-                           ("Generator Training Loss", "Generator Validation Loss",
-                            "Discriminator Training Loss", "Discriminator Validation Loss"),
-                           "Loss Curves")
+                plot_stats((self.gen.train_losses, self.gen.val_losses),
+                           ("Generator Training Loss", "Generator Validation Loss"),
+                           "Generator Loss Curves")
+                plot_stats((self.discrim.train_losses, self.discrim.val_losses),
+                           ("Discriminator Training Loss", "Discriminator Validation Loss"),
+                           "Discriminator Loss Curves")
                 show_imgs(self.gen(self.gen_input_fn(dl_train.dataset[:10])), "Generated Training Images")
                 show_imgs(self.gen(self.gen_input_fn(dl_val.dataset[:10])), "Generated Validation Images")
                 if checkpoint_directory:
