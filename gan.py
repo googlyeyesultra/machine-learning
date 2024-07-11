@@ -7,7 +7,7 @@ import os
 class GAN(nn.Module):
     def __init__(self,
                  gen, gen_opt, gen_input_fn, gen_loss_fn,  # Assumes loss_fns add rather than mean.
-                 discrim, discrim_opt, discrim_loss_fn, discrim_gradient_clipping=False):
+                 discrim, discrim_opt, discrim_loss_fn, discrim_weight_clipping=False):
         
         super().__init__()
         
@@ -19,7 +19,7 @@ class GAN(nn.Module):
         self.discrim = discrim
         self.discrim_opt = discrim_opt
         self.discrim_loss_fn = discrim_loss_fn
-        self.discrim_gradient_clipping = discrim_gradient_clipping
+        self.discrim_weight_clipping = discrim_weight_clipping
         
         self.epoch = 1
         
@@ -48,10 +48,12 @@ class GAN(nn.Module):
         
         self.discrim_opt.zero_grad()
         discrim_loss.backward(retain_graph=True)
-        if self.discrim_gradient_clipping:
-            nn.utils.clip_grad_value_(self.discrim.parameters(), 1.0)
-            
         self.discrim_opt.step()
+        
+        if self.discrim_weight_clipping:
+            with torch.no_grad():
+                for param in self.discrim.parameters():
+                    param.clamp_(-1, 1)
         
         gen_loss = self.gen_loss_fn(self.discrim(gen_out), batch, gen_out)
         
