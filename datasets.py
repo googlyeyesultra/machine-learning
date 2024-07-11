@@ -4,7 +4,7 @@ import glob
 import torch
 
 class UnlabeledImageDataset(Dataset):  # TODO support for putting on CPU with pinned memory.
-    def __init__(self, path, input_dimensions, device, channels=4, preprocessing=None):
+    def __init__(self, path, input_dimensions, device, channels=4, preprocessing=None, filetype="png"):
         """Loads images as a dataset without class labels.
         
         Args:
@@ -25,7 +25,7 @@ class UnlabeledImageDataset(Dataset):  # TODO support for putting on CPU with pi
                  torchvision.io.ImageReadMode.RGB_ALPHA]
         mode = modes[channels-1]
             
-        files = glob.glob(path + "/**/*", recursive=True)
+        files = glob.glob(path + f"/**/*.{filetype}", recursive=True)
         self.data = torch.empty((len(files), channels, input_dimensions[0], input_dimensions[1]), dtype=torch.float, device=device)
         for i, filename in enumerate(files):  # Note: making no guarantee as to order.
             self.data[i] = torchvision.io.read_image(filename, mode) / 128 - .5
