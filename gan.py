@@ -1,4 +1,5 @@
 import torch
+from torch import autograd
 import torch.nn as nn
 from tqdm import tqdm
 from plots import show_imgs, plot_stats
@@ -40,7 +41,23 @@ class GAN(nn.Module):
     def load_checkpoint(self, path):
         checkpoint = torch.load(path)
         self.load_state_dict(checkpoint["state"])
+    
+    def _gradient_penalty(self, real_samples, fake_samples):
+        # Based on:
+        # https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan_gp/wgan_gp.py
+        alpha = torch.rand((real_samples.size(0),1,1,1), device=real_samples.get_device())
+        interpolated = (alpha * real_samples + (1-alpha) * fake_samples).requires_grad_(True)
+        discrim_out = self.discrim(interpolated)
+        grad_out = torch.ones_like(discrim_out)
+        grads = autograd.grad(
+            outputs=discrim_out,
+            inputs=interpolated,
+            grad_outputs=grad_out)
+        grads = grads.view(grads.size(0), -1)
+        gp = ((grads.norm(2, dim=1) - 1) ** 2).sum()  # Using sum instead of mean as everywhere else does.
+        return gp
         
+    
     def _train_batch(self, batch):
         self.gen.train()
         self.discrim.train()
@@ -50,7 +67,9 @@ class GAN(nn.Module):
         discrim_scores_fake = self.discrim(gen_out)
         
         discrim_loss = self.discrim_loss_fn(discrim_scores_real, discrim_scores_fake)
-        
+        if self.discrim_gradient_penalty:
+            discrim_loss += self._gradient_penalty(batch, gen_out)
+            
         self.discrim_opt.zero_grad()
         discrim_loss.backward(retain_graph=True)
         if self.discrim_gradient_clipping:
