@@ -54,8 +54,10 @@ class GAN(nn.Module):
         grads = autograd.grad(
             outputs=discrim_out,
             inputs=interpolated,
-            grad_outputs=grad_out)[0]
-        grads = grads.view(real_samples.size(0), -1)
+            grad_outputs=grad_out,
+            create_graph=True,  # TODO see if create and retain strictly necessary.
+            retain_graph=True)[0]
+        grads = grads.reshape(real_samples.size(0), -1)
         gp = ((grads.norm(2, dim=1) - 1) ** 2).sum()  # Using sum instead of mean as everywhere else does.
         return gp
         
