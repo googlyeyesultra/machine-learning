@@ -49,7 +49,8 @@ class GAN(nn.Module):
     def _gradient_penalty(self, real_samples, fake_samples):
         # Based on:
         # https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan_gp/wgan_gp.py
-        alpha = torch.rand((real_samples.size(0),1,1,1), device=real_samples.get_device())
+        size = tuple([real_samples.size(0)] + [1 for i in range(real_samples.dim-1)])
+        alpha = torch.rand(size, device=real_samples.get_device())
         interpolated = (alpha * real_samples + (1-alpha) * fake_samples).requires_grad_(True)
         discrim_out = self.discrim(interpolated)
         grad_out = torch.ones_like(discrim_out)
@@ -68,10 +69,7 @@ class GAN(nn.Module):
         # https://lernapparat.de/improved-wasserstein-gan/
         # https://github.com/t-vi/pytorch-tvmisc/blob/master/wasserstein-distance/Semi-Improved_Training_of_Wasserstein_GAN.ipynb
         # This is useful as Pytorch doesn't support 2nd order deriv with attention.
-        dist = ((real_samples - fake_samples) ** 2).sum(1) ** .5
-        print(discrim_scores_real.size())
-        print(discrim_scores_fake.size())
-        print(dist.size())
+        dist = ((real_samples.flatten(1) - fake_samples.flatten(1)) ** 2).sum(1) ** .5
         est = (discrim_scores_real - discrim_scores_fake).abs()/(dist + 1e-8)
         return ((1-est) ** 2).sum(0).view(1)
     
