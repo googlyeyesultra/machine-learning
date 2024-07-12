@@ -55,7 +55,7 @@ class GAN(nn.Module):
             outputs=discrim_out,
             inputs=interpolated,
             grad_outputs=grad_out)[0]
-        grads = grads.view(grads.size(0), -1)
+        grads = grads.view(real_samples.size(0), -1)
         gp = ((grads.norm(2, dim=1) - 1) ** 2).sum()  # Using sum instead of mean as everywhere else does.
         return gp
         
