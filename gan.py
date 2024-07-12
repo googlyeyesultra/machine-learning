@@ -12,6 +12,7 @@ class GAN(nn.Module):
                  discrim_weight_clipping=False,
                  discrim_gradient_clipping=False,
                  discrim_gradient_penalty=False,
+                 discrim_simple_gradient_penalty=False,
                  gp_weight=10.0):
         
         super().__init__()
@@ -27,6 +28,7 @@ class GAN(nn.Module):
         self.discrim_weight_clipping = discrim_weight_clipping
         self.discrim_gradient_clipping = discrim_gradient_clipping
         self.discrim_gradient_penalty = discrim_gradient_penalty
+        self.discrim_simple_gradient_penalty = discrim_simple_gradient_penalty
         self.gp_weight = gp_weight
         
         self.epoch = 1
@@ -55,12 +57,20 @@ class GAN(nn.Module):
             outputs=discrim_out,
             inputs=interpolated,
             grad_outputs=grad_out,
-            create_graph=True,  # TODO see if create and retain strictly necessary.
+            create_graph=True,
             retain_graph=True)[0]
         grads = grads.reshape(real_samples.size(0), -1)
         gp = ((grads.norm(2, dim=1) - 1) ** 2).sum()  # Using sum instead of mean as everywhere else does.
         return gp
-        
+    
+    def _simple_gradient_penalty(self, real_samples, fake_samples,
+                                 discrim_scores_real, discrim_scores_fake):
+        # https://lernapparat.de/improved-wasserstein-gan/
+        # https://github.com/t-vi/pytorch-tvmisc/blob/master/wasserstein-distance/Semi-Improved_Training_of_Wasserstein_GAN.ipynb
+        # This is useful as Pytorch doesn't support 2nd order deriv with attention.
+        dist = ((real_samples - fake_samples) ** 2).sum(1) ** .5
+        est = (discrim_scores_real - discrim_scores_fake).abs()/(dist + 1e-8)
+        return ((1-est) ** 2).sum(0).view(1)
     
     def _train_batch(self, batch):
         self.gen.train()
@@ -73,7 +83,12 @@ class GAN(nn.Module):
         discrim_loss = self.discrim_loss_fn(discrim_scores_real, discrim_scores_fake)
         if self.discrim_gradient_penalty:
             discrim_loss += self._gradient_penalty(batch, gen_out) * self.gp_weight
-            
+        
+        if self.discrim_simple_gradient_penalty:
+            discrim_loss += self._simple_gradient_penalty(batch, gen_out,
+                                                          discrim_scores_real,
+                                                          discrim_scores_fake) * self.gp_weight
+        
         self.discrim_opt.zero_grad()
         discrim_loss.backward(retain_graph=True)
         if self.discrim_gradient_clipping:
