@@ -49,7 +49,7 @@ class GAN(nn.Module):
     def _gradient_penalty(self, real_samples, fake_samples):
         # Based on:
         # https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan_gp/wgan_gp.py
-        size = tuple([real_samples.size(0)] + [1 for i in range(real_samples.dim-1)])
+        size = tuple([real_samples.size(0)] + [1 for i in range(real_samples.dim()-1)])
         alpha = torch.rand(size, device=real_samples.get_device())
         interpolated = (alpha * real_samples + (1-alpha) * fake_samples).requires_grad_(True)
         discrim_out = self.discrim(interpolated)
