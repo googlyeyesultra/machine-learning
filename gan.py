@@ -71,7 +71,7 @@ class GAN(nn.Module):
         # This is useful as Pytorch doesn't support 2nd order deriv with attention.
         dist = ((real_samples.flatten(1) - fake_samples.flatten(1)) ** 2).sum(1) ** .5
         est = (discrim_scores_real - discrim_scores_fake).abs()/(dist + 1e-8)
-        return ((1-est) ** 2).sum(0).view(1)
+        return ((1-est) ** 2).sum(0)
     
     def _train_batch(self, batch):
         self.gen.train()
