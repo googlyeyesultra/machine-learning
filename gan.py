@@ -71,7 +71,7 @@ class GAN(nn.Module):
         # This is useful as Pytorch doesn't support 2nd deriv with attention.
         dist = ((real_samples.flatten(1) - fake_samples.flatten(1)).pow(2)).sum(1) ** .5
         est = (discrim_scores_real - discrim_scores_fake).abs()/(dist + 1e-8)
-        return ((1-est) ** 2).sum(0)
+        return ((1-est).pow(2)).sum(0)
     
     def _train_batch(self, batch):
         self.gen.train()
@@ -86,10 +86,6 @@ class GAN(nn.Module):
             discrim_loss += self._gradient_penalty(batch, gen_out) * self.gp_weight
         
         if self.discrim_simple_gradient_penalty:
-            print(discrim_loss.size())
-            print(self._simple_gradient_penalty(batch, gen_out,
-                                                          discrim_scores_real,
-                                                          discrim_scores_fake).size())
             discrim_loss += self._simple_gradient_penalty(batch, gen_out,
                                                           discrim_scores_real,
                                                           discrim_scores_fake) * self.gp_weight
