@@ -11,7 +11,8 @@ class GAN(nn.Module):
                  discrim, discrim_opt, discrim_loss_fn,
                  discrim_weight_clipping=False,
                  discrim_gradient_clipping=False,
-                 discrim_gradient_penalty=False):
+                 discrim_gradient_penalty=False,
+                 gp_weight=10.0):
         
         super().__init__()
         
@@ -26,6 +27,7 @@ class GAN(nn.Module):
         self.discrim_weight_clipping = discrim_weight_clipping
         self.discrim_gradient_clipping = discrim_gradient_clipping
         self.discrim_gradient_penalty = discrim_gradient_penalty
+        self.gp_weight = gp_weight
         
         self.epoch = 1
         
@@ -52,7 +54,7 @@ class GAN(nn.Module):
         grads = autograd.grad(
             outputs=discrim_out,
             inputs=interpolated,
-            grad_outputs=grad_out)
+            grad_outputs=grad_out)[0]
         grads = grads.view(grads.size(0), -1)
         gp = ((grads.norm(2, dim=1) - 1) ** 2).sum()  # Using sum instead of mean as everywhere else does.
         return gp
@@ -68,7 +70,7 @@ class GAN(nn.Module):
         
         discrim_loss = self.discrim_loss_fn(discrim_scores_real, discrim_scores_fake)
         if self.discrim_gradient_penalty:
-            discrim_loss += self._gradient_penalty(batch, gen_out)
+            discrim_loss += self._gradient_penalty(batch, gen_out) * self.gp_weight
             
         self.discrim_opt.zero_grad()
         discrim_loss.backward(retain_graph=True)
