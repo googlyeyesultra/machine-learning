@@ -70,7 +70,7 @@ class GAN(nn.Module):
         # https://github.com/t-vi/pytorch-tvmisc/blob/master/wasserstein-distance/Semi-Improved_Training_of_Wasserstein_GAN.ipynb
         # This is useful as Pytorch doesn't support 2nd deriv with attention.
         dist = ((real_samples.flatten(1) - fake_samples.flatten(1)).pow(2)).sum(1) ** .5
-        est = (discrim_scores_real - discrim_scores_fake).abs()/(dist + 1e-8)
+        est = (discrim_scores_real - discrim_scores_fake).abs().sum(1)/(dist + 1e-8)
         return ((1-est).pow(2)).sum(0)
     
     def _train_batch(self, batch):
