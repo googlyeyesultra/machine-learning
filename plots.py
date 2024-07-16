@@ -16,7 +16,7 @@ def show_imgs(imgs, title=None, labels=None, grayscale=False):
     
     for i, img in enumerate(imgs):
         plt.subplot(1, len(imgs), i+1)
-        if labels:
+        if labels is not None:
             plt.title(labels[i])
         plt.axis("off")
         img = img.detach().cpu()
