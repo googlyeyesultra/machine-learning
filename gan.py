@@ -38,7 +38,7 @@ class GAN(nn.Module):
         return next(self.parameters()).device
     
     def batch_to_device(self, batch):
-        if isinstance(batch, torch.tensor):
+        if isinstance(batch, torch.Tensor):
             return batch.to(self.device)
         else:  # list of tensors
             return [x.to(self.device) for x in batch]
