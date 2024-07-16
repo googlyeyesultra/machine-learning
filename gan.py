@@ -39,8 +39,8 @@ class GAN(nn.Module):
         else:
             self.epoch_display_fn = self.default_epoch_display
             
-    def default_epoch_display(self):
-        train_data = torch.utils.data.Subset(self.dl_train.dataset, list(range(10)))
+    def default_epoch_display(self, dl_train, dl_val):
+        train_data = torch.utils.data.Subset(dl_train.dataset, list(range(10)))
         show_imgs(self.gen(self.gen_input_fn(train_data)), "Generated Training Images")
         
     @property
@@ -191,7 +191,7 @@ class GAN(nn.Module):
                            ("Discriminator Training Loss", "Discriminator Validation Loss"),
                            "Discriminator Loss Curves")
                 torch.utils.data.Subset(dl_train.dataset, list(range(10)))
-                self.epoch_display_fn(self)
+                self.epoch_display_fn(self, dl_train, dl_val)
                 if checkpoint_directory:
                     self.save_checkpoint(os.path.join(checkpoint_directory, f"checkpoint-{self.epoch-1}.tar"))
                 
