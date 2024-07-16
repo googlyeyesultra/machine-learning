@@ -33,6 +33,10 @@ class GAN(nn.Module):
         
         self.epoch = 1
         
+    @property
+    def device(self):
+        return next(self.parameters()).device
+        
     def get_extra_state(self):
         return {"epoch": self.epoch}
         
@@ -46,7 +50,7 @@ class GAN(nn.Module):
         checkpoint = torch.load(path)
         self.load_state_dict(checkpoint["state"])
     
-    def _gradient_penalty(self, real_samples, fake_samples):
+    def _gradient_penalty(self, real_samples, fake_samples):  # TODO this probably isn't working correctly.
         # Based on:
         # https://github.com/eriklindernoren/PyTorch-GAN/blob/master/implementations/wgan_gp/wgan_gp.py
         size = tuple([real_samples.size(0)] + [1 for i in range(real_samples.dim()-1)])
@@ -76,7 +80,6 @@ class GAN(nn.Module):
     def _train_batch(self, batch):
         self.gen.train()
         self.discrim.train()
-        
         gen_out = self.gen(self.gen_input_fn(batch))
         discrim_scores_real = self.discrim(batch)
         discrim_scores_fake = self.discrim(gen_out)
@@ -114,7 +117,7 @@ class GAN(nn.Module):
         total_gen_loss, total_discrim_loss = 0, 0
         loop_display = tqdm if verbose else lambda x: x
         for batch in loop_display(dl_train):
-            gen_loss, discrim_loss = self._train_batch(batch)
+            gen_loss, discrim_loss = self._train_batch(batch.to(self.device))
             total_gen_loss += gen_loss
             total_discrim_loss += discrim_loss
         
@@ -127,11 +130,12 @@ class GAN(nn.Module):
         total_gen_loss, total_discrim_loss = 0, 0
         with torch.no_grad():
             for batch in dl_val:
-                gen_out = self.gen(self.gen_input_fn(batch))
-                discrim_scores_real = self.discrim(batch)
+                b = batch.to(self.device)
+                gen_out = self.gen(self.gen_input_fn(b))
+                discrim_scores_real = self.discrim(b)
                 discrim_scores_fake = self.discrim(gen_out)
                 discrim_loss = self.discrim_loss_fn(discrim_scores_real, discrim_scores_fake)
-                gen_loss = self.gen_loss_fn(discrim_scores_fake, batch, gen_out)
+                gen_loss = self.gen_loss_fn(discrim_scores_fake, b, gen_out)
                 total_gen_loss += gen_loss
                 total_discrim_loss += discrim_loss
         

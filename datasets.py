@@ -40,7 +40,7 @@ class UnlabeledImageDataset(Dataset):  # TODO support for putting on CPU with pi
         return self.data[i]
     
     
-def split_ds(ds, split, batch_size):
+def split_ds(ds, split, batch_size, pin_memory=False):
     """Splits dataset and makes Dataloaders. First loader will be shuffled (for training), others not.
     
     Args:
@@ -52,8 +52,8 @@ def split_ds(ds, split, batch_size):
     """
     datasets = random_split(ds, split, torch.Generator().manual_seed(23))
     loaders = []
-    loaders.append(DataLoader(datasets[0], batch_size=batch_size, shuffle=True))
+    loaders.append(DataLoader(datasets[0], batch_size=batch_size, shuffle=True, pin_memory=pin_memory))
     for dataset in datasets[1:]:
-        loaders.append(DataLoader(dataset, batch_size=batch_size, shuffle=False))
+        loaders.append(DataLoader(dataset, batch_size=batch_size, shuffle=False, pin_memory=pin_memory))
     
     return loaders
