@@ -13,7 +13,8 @@ class GAN(nn.Module):
                  discrim_gradient_clipping=False,
                  discrim_gradient_penalty=False,
                  discrim_simple_gradient_penalty=False,
-                 gp_weight=10.0):
+                 gp_weight=10.0,
+                 epoch_display_fn=None):
         
         super().__init__()
         
@@ -32,6 +33,15 @@ class GAN(nn.Module):
         self.gp_weight = gp_weight
         
         self.epoch = 1
+        
+        if epoch_display_fn:
+            self.epoch_display_fn = epoch_display_fn
+        else:
+            self.epoch_display_fn = self.default_epoch_display
+            
+    def default_epoch_display(self):
+        train_data = torch.utils.data.Subset(self.dl_train.dataset, list(range(10)))
+        show_imgs(self.gen(self.gen_input_fn(train_data)), "Generated Training Images")
         
     @property
     def device(self):
@@ -180,8 +190,8 @@ class GAN(nn.Module):
                 plot_stats((self.discrim.train_losses, self.discrim.val_losses),
                            ("Discriminator Training Loss", "Discriminator Validation Loss"),
                            "Discriminator Loss Curves")
-                show_imgs(self.gen(self.gen_input_fn(dl_train.dataset[:10])), "Generated Training Images")
-                show_imgs(self.gen(self.gen_input_fn(dl_val.dataset[:10])), "Generated Validation Images")
+                torch.utils.data.Subset(dl_train.dataset, list(range(10)))
+                self.epoch_display_fn()
                 if checkpoint_directory:
                     self.save_checkpoint(os.path.join(checkpoint_directory, f"checkpoint-{self.epoch-1}.tar"))
                 
