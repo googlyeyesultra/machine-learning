@@ -36,6 +36,12 @@ class GAN(nn.Module):
     @property
     def device(self):
         return next(self.parameters()).device
+    
+    def batch_to_device(self, batch):
+        if isinstance(batch, torch.tensor):
+            return batch.to(self.device)
+        else:  # list of tensors
+            return [x.to(self.device) for x in batch]
         
     def get_extra_state(self):
         return {"epoch": self.epoch}
@@ -117,7 +123,7 @@ class GAN(nn.Module):
         total_gen_loss, total_discrim_loss = 0, 0
         loop_display = tqdm if verbose else lambda x: x
         for batch in loop_display(dl_train):
-            gen_loss, discrim_loss = self._train_batch(batch.to(self.device))
+            gen_loss, discrim_loss = self._train_batch(self.batch_to_device(batch))
             total_gen_loss += gen_loss
             total_discrim_loss += discrim_loss
         
@@ -130,7 +136,7 @@ class GAN(nn.Module):
         total_gen_loss, total_discrim_loss = 0, 0
         with torch.no_grad():
             for batch in dl_val:
-                b = batch.to(self.device)
+                b = self.batch_to_device(batch)
                 gen_out = self.gen(self.gen_input_fn(b))
                 discrim_scores_real = self.discrim(b)
                 discrim_scores_fake = self.discrim(gen_out)
