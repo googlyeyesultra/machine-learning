@@ -191,7 +191,7 @@ class GAN(nn.Module):
                            ("Discriminator Training Loss", "Discriminator Validation Loss"),
                            "Discriminator Loss Curves")
                 torch.utils.data.Subset(dl_train.dataset, list(range(10)))
-                self.epoch_display_fn()
+                self.epoch_display_fn(self)
                 if checkpoint_directory:
                     self.save_checkpoint(os.path.join(checkpoint_directory, f"checkpoint-{self.epoch-1}.tar"))
                 
