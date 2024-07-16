@@ -45,7 +45,7 @@ class GAN(nn.Module):
         
     @property
     def device(self):
-        return next(self.parameters()).device
+        return next(iter(self.parameters())).device
     
     def batch_to_device(self, batch):
         if isinstance(batch, torch.Tensor):
