@@ -13,6 +13,7 @@ class GAN(nn.Module):
                  discrim_gradient_clipping=False,
                  discrim_gradient_penalty=False,
                  discrim_simple_gradient_penalty=False,
+                 discrim_custom_gp_fn=None,
                  gp_weight=10.0,
                  epoch_display_fn=None,
                  train_gen_every=1):
@@ -32,6 +33,7 @@ class GAN(nn.Module):
         self.discrim_gradient_penalty = discrim_gradient_penalty
         self.discrim_simple_gradient_penalty = discrim_simple_gradient_penalty
         self.gp_weight = gp_weight
+        self.discrim_custom_gp_fn = discrim_custom_gp_fn
         self.train_gen_every = 1
         
         self.epoch = 1
@@ -111,6 +113,9 @@ class GAN(nn.Module):
                                                           discrim_scores_real,
                                                           discrim_scores_fake) * self.gp_weight
         
+        if self.discrim_custom_gp_fn:
+            discrim_loss += self.discrim_custom_gp_fn(batch, gen_out) * self.gp_weight
+            
         self.discrim_opt.zero_grad()
         discrim_loss.backward(retain_graph=True)
         if self.discrim_gradient_clipping:
