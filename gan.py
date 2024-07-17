@@ -114,7 +114,7 @@ class GAN(nn.Module):
                                                           discrim_scores_fake) * self.gp_weight
         
         if self.discrim_custom_gp_fn:
-            discrim_loss += self.discrim_custom_gp_fn(batch, gen_out) * self.gp_weight
+            discrim_loss += self.discrim_custom_gp_fn(self, batch, gen_out) * self.gp_weight
             
         self.discrim_opt.zero_grad()
         discrim_loss.backward(retain_graph=True)
