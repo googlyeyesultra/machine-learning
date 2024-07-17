@@ -14,7 +14,8 @@ class GAN(nn.Module):
                  discrim_gradient_penalty=False,
                  discrim_simple_gradient_penalty=False,
                  gp_weight=10.0,
-                 epoch_display_fn=None):
+                 epoch_display_fn=None,
+                 train_gen_every=1):
         
         super().__init__()
         
@@ -31,6 +32,7 @@ class GAN(nn.Module):
         self.discrim_gradient_penalty = discrim_gradient_penalty
         self.discrim_simple_gradient_penalty = discrim_simple_gradient_penalty
         self.gp_weight = gp_weight
+        self.train_gen_every = 1
         
         self.epoch = 1
         
@@ -121,11 +123,12 @@ class GAN(nn.Module):
                 for param in self.discrim.parameters():
                     param.clamp_(-1, 1)
         
+        # We still calculate loss for record keeping purposes, though this does make it slower.
         gen_loss = self.gen_loss_fn(self.discrim(gen_out), batch, gen_out)
-        
-        self.gen_opt.zero_grad()
-        gen_loss.backward()
-        self.gen_opt.step()
+        if not self.epoch % self.train_gen_every:
+            self.gen_opt.zero_grad()
+            gen_loss.backward()
+            self.gen_opt.step()
                 
         return float(gen_loss), float(discrim_loss)
     
