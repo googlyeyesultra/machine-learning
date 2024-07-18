@@ -117,7 +117,7 @@ class GAN(nn.Module):
             discrim_loss += self.discrim_custom_gp_fn(self, batch, gen_out) * self.gp_weight
             
         self.discrim_opt.zero_grad()
-        discrim_loss.backward(retain_graph=True)
+        discrim_loss.backward()
         if self.discrim_gradient_clipping:
             nn.utils.clip_grad_value_(self.discrim.parameters(), 1.0)
             
@@ -128,7 +128,9 @@ class GAN(nn.Module):
                 for param in self.discrim.parameters():
                     param.clamp_(-1, 1)
         
-        # We still calculate loss for record keeping purposes, though this does make it slower.
+        # We still calculate loss even if not training gen 
+        # for record keeping purposes, though this does make it slower.
+        # Could speed up by not calculating gradient if not needed. TODO
         gen_loss = self.gen_loss_fn(self.discrim(gen_out), batch, gen_out)
         if not self.epoch % self.train_gen_every:
             self.gen_opt.zero_grad()
